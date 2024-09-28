@@ -1,5 +1,66 @@
 const container = document.querySelector('.container')
 const optionsContainer = document.querySelector('.options-container')
-// ir stand for iran
-const country = 'ir';
-const options = ["general", "entertainment", "health", "science", "sports", "technology"]
+// ir stand for india
+const country = 'in';
+const options = ["general", "entertainment", "health", "science", "sports", "technology"];
+// 100 request per day 
+let requestURL;
+// Create card from data 
+const generateUI = (articles) => {
+    for (let item of articles) {
+        let card = document.createElement('div');
+        card.classList.add('news-card');
+        card.innerHTML = `
+    <div class="news-image-container">
+          <img src="${item.urlToImage || "./newspaper.jpg"}" alt="" />
+    </div>
+    <div class="news-content">
+        <div class="news-title">
+        ${item.title}
+        </div>
+        <div class="news-description">
+        ${item.description || item.content || ""}
+        </div>
+        <a href="${item.url}" target="_blank" class="view-button" >Read more </a>
+    </div>
+    `
+        container.appendChild(card)
+    }
+}
+
+// news API call 
+const getNews = async () => {
+    container.innerHTML = '';
+    let response = await fetch(requestURL);
+    if (!response.ok) {
+        alert("Data Unavailable at the moment. Please try agin letter.");
+        return false;
+    }
+    let data = await response.json();
+    generateUI(data.articles);
+}
+// category selections
+const selectCategory = (e, category) => {
+    let options = document.querySelectorAll('.option');
+    options.forEach((element) => {
+        element.classList.remove("active");
+    })
+    requestURL = `https://newsapi.org/v2/top-headlines?category=${category}&apiKey=${apiKey}`;
+    e.target.classList.add('active')
+    getNews()
+}
+// options button
+const createOptions = () => {
+    for (let i of options) {
+        optionsContainer.innerHTML += `<button class="option ${i == "general" ? "active" : ""}" onClick="selectCategory(event,'${i}')" >${i}</button>`
+    }
+}
+const init = () => {
+    optionsContainer.innerHTML = "";
+    getNews();
+    createOptions();
+}
+window.onload = () => {
+    requestURL = `https://newsapi.org/v2/top-headlines?category=general&apiKey=${apiKey}`;
+    init();
+}
